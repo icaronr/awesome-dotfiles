@@ -18,6 +18,10 @@ require("awful.hotkeys_popup.keys.vim")
 -- xrandr module
 local xrandr = require("xrandr")
 
+-- fenetre global titlebar
+local fenetre = require("fenetre")
+local titlebar = fenetre { }
+
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
@@ -237,7 +241,8 @@ awful.screen.connect_for_each_screen(function(s)
             s.mypromptbox,
             separator,
         },
-        s.mytasklist, -- Middle widget
+        --s.mytasklist, -- Middle widget
+        titlebar,
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             wibox.widget.systray(),
@@ -409,7 +414,18 @@ globalkeys = gears.table.join(
         function ()
             os.execute(string.format("amixer -q set %s 0%%", "Master"))
         end,
-        {description = "volume 0%", group = "hotkeys"})
+        {description = "volume 0%", group = "hotkeys"}),
+    -- Brightness
+    awful.key({ }, "XF86MonBrightnessUp",
+        function ()
+            os.execute(string.format("xbacklight +10"))
+         end,
+            {description = "Brightness up", group = "hotkeys"}),
+    awful.key({ }, "XF86MonBrightnessDown",
+        function ()
+            os.execute(string.format("xbacklight -10"))
+        end,
+        {description = "Brightness down", group = "hotkeys"})
 )
 
 clientkeys = gears.table.join(
@@ -562,7 +578,7 @@ awful.rules.rules = {
 
     -- Add titlebars to normal clients and dialogs
     { rule_any = {type = { "normal", "dialog" } },
-      properties = { titlebars_enabled = true }
+      properties = { titlebars_enabled = false }
     },
 	
     -- Set Firefox to always map on the tag named "2" on screen 1.
@@ -645,8 +661,15 @@ client.connect_signal("mouse::enter", function(c)
     end
 end)
 
-client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.connect_signal("focus", function(c) 
+    c.border_color = beautiful.border_focus
+    c.opacity = 1 
+end)
+client.connect_signal("unfocus", function(c) 
+    c.border_color = beautiful.border_normal 
+    c.opacity = 0.8
+end)
+
 
 -- Disable borders on lone windows
 -- Handle border sizes of clients.
@@ -682,13 +705,22 @@ end
 
 -- }}}
 
---client.connect_signal("property::floating", function (c)
---    if c.floating then
---        awful.titlebar.show(c)
---    else
---        awful.titlebar.hide(c)
---    end
---end)
+client.connect_signal("property::floating", function (c)
+    if c.floating then
+        awful.titlebar.show(c)
+    else
+        awful.titlebar.hide(c)
+    end
+end)
+
+-- rounded clients
+client.connect_signal("manage", function (c)
+    c.shape = function(cr,w,h)
+        gears.shape.rounded_rect(cr,w,h,20)
+    end
+end)
+
+
 gears.wallpaper.maximized('~/Pictures/Wallpaper/sunset_gran_canaria_spain.jpg', s, true)
 awful.spawn.with_shell("~/.config/awesome/autorun.sh")
 

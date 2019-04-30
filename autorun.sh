@@ -28,7 +28,8 @@ fi
 run xfsettingsd
 run nm-applet
 run light-locker
-run compton --shadow-exclude '!focused'
+#run compton --shadow-exclude '!focused'
+run compton -b
 run xcape -e 'Super_L=Super_L|Control_L|Escape'
 run thunar --daemon
 run pa-applet
@@ -36,4 +37,4 @@ run pamac-tray
 # blueman-applet and msm_notifier are not installed in minimal edition
 run blueman-applet
 run msm_notifier
-feh --bg-scale ~/Pictures/get_shit_done.jpg
+feh --bg-scale ~/Pictures/Wallpapers/Ship-Wallpaper-52-1920x1080.jpg
