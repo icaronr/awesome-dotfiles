@@ -667,7 +667,7 @@ client.connect_signal("focus", function(c)
 end)
 client.connect_signal("unfocus", function(c) 
     c.border_color = beautiful.border_normal 
-    c.opacity = 0.8
+    c.opacity = 1
 end)
 
 
@@ -720,6 +720,7 @@ client.connect_signal("manage", function (c)
     end
 end)
 
+local tlist = require("popups/tasklist")
 
 gears.wallpaper.maximized('~/Pictures/Wallpaper/sunset_gran_canaria_spain.jpg', s, true)
 awful.spawn.with_shell("~/.config/awesome/autorun.sh")
