@@ -39,45 +39,49 @@ local tasklist_buttons = gears.table.join(
                                               awful.client.focus.byidx(-1)
                                           end))
 
-
-local tlist = awful.popup {
-  widget = awful.widget.tasklist {
-      screen   = screen[1],
-      filter   = awful.widget.tasklist.filter.allscreen,
-      buttons  = tasklist_buttons,
-      style    = {
-          shape = gears.shape.partially_rounded_rect,
-      },
-      layout   = {
-          spacing = 10,
-          forced_num_rows = 1,
-          layout = wibox.layout.flex.vertical
-      },
-      widget_template = {
+local my_tasklist = awful.widget.tasklist {
+  screen   = s,
+  filter   = awful.widget.tasklist.filter.currenttags,
+  buttons  = tasklist_buttons,
+  layout   = {
+      spacing_widget = {
           {
-              {
-                  id     = 'clienticon',
-                  widget = awful.widget.clienticon,
-              },
-              margins = 2,
-              widget  = wibox.container.margin,
+              forced_width  = 5,
+              forced_height = 24,
+              thickness     = 1,
+              color         = '#777777',
+              widget        = wibox.widget.separator
           },
-          id              = 'background_role',
-          forced_width    = 32,
-          forced_height   = 32,
-          widget          = wibox.container.background,
-          create_callback = function(self, c, index, objects) --luacheck: no unused
-              self:get_children_by_id('clienticon')[1].client = c
-          end,
+          valign = 'center',
+          halign = 'center',
+          widget = wibox.container.place,
       },
+      spacing = 1,
+      layout  = wibox.layout.fixed.horizontal
   },
-  border_color = '#777777',
-  border_width = 0,
-  ontop        = false,
-  placement    = awful.placement.left,
-  shape        = gears.shape.partially_rounded_rect
+  -- Notice that there is *NO* wibox.wibox prefix, it is a template,
+  -- not a widget instance.
+  widget_template = {
+      {
+          wibox.widget.base.make_widget(),
+          forced_height = 5,
+          id            = 'background_role',
+          widget        = wibox.container.background,
+      },
+      {
+          {
+              id     = 'clienticon',
+              widget = awful.widget.clienticon,
+          },
+          margins = 5,
+          widget  = wibox.container.margin
+      },
+      nil,
+      create_callback = function(self, c, index, objects) --luacheck: no unused args
+          self:get_children_by_id('clienticon')[1].client = c
+      end,
+      layout = wibox.layout.align.vertical,
+  },
 }
 
-
-
-return tlist
+return my_tasklist

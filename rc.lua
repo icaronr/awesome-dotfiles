@@ -18,9 +18,6 @@ require("awful.hotkeys_popup.keys.vim")
 -- xrandr module
 local xrandr = require("xrandr")
 
--- fenetre global titlebar
-local fenetre = require("fenetre")
-local titlebar = fenetre { }
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -60,7 +57,7 @@ beautiful.notification_font = "Noto Sans Bold 14"
 browser = "google-chrome-stable" or "firefox"
 filemanager = "exo-open --launch FileManager" or "thunar"
 gui_editor = "code"
-terminal = "hyper" or "lxterminal"
+terminal = "tilda" or "lxterminal"
 
 -- Default modkey.
 -- Usually, Mod4 is the key with a logo between Control and Alt.
@@ -205,7 +202,11 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+local systray = wibox.widget.systray()
+
+
 awful.screen.connect_for_each_screen(function(s)
+    --s.padding = {left=s.padding.left+12, right=s.padding.right, top=s.padding.top, bottom=s.padding.bottom}
     -- Wallpaper
     set_wallpaper(s)
 
@@ -226,32 +227,80 @@ awful.screen.connect_for_each_screen(function(s)
     s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, taglist_buttons)
 	
     -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
+    --s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
+    s.mytasklist = awful.widget.tasklist {
+        screen   = s,
+        filter   = awful.widget.tasklist.filter.currenttags,
+        buttons  = tasklist_buttons,
+        layout   = {
+            spacing_widget = {
+                {
+                    forced_width  = 5,
+                    forced_height = 24,
+                    thickness     = 1,
+                    color         = '#777777',
+                    widget        = wibox.widget.separator
+                },
+                valign = 'center',
+                halign = 'center',
+                widget = wibox.container.place,
+            },
+            spacing = 20,
+            layout  = wibox.layout.fixed.horizontal
+        },
+        -- Notice that there is *NO* wibox.wibox prefix, it is a template,
+        -- not a widget instance.
+        widget_template = {
+            {
+                wibox.widget.base.make_widget(),
+                forced_height = 5,
+                id            = 'background_role',
+                widget        = wibox.container.background,
+            },
+            {
+                {
+                    id     = 'clienticon',
+                    widget = awful.widget.clienticon,
+                },
+                margins = 0,
+                widget  = wibox.container.margin
+            },
+            nil,
+            create_callback = function(self, c, index, objects) --luacheck: no unused args
+                self:get_children_by_id('clienticon')[1].client = c
+            end,
+            layout = wibox.layout.align.vertical,
+        },
+    }
+
+
+
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s })
+    s.mywibox = awful.wibar({ position = "top", screen = s, height = 32 })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
+        expand = "none",
         layout = wibox.layout.align.horizontal,
         { -- Left widgets
-            layout = wibox.layout.fixed.horizontal,
-            mylauncher,
-            s.mytaglist,
-            s.mypromptbox,
-            separator,
+                layout = wibox.layout.fixed.horizontal,
+                mylauncher,
+                s.mytaglist,
+                s.mypromptbox,
+                separator,
         },
-        --s.mytasklist, -- Middle widget
-        titlebar,
+        s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            wibox.widget.systray(),
+            systray,
             mykeyboardlayout,
             separator,
             mytextclock,
             s.mylayoutbox,
         },
     }
+    
 end)
 -- }}}
 
@@ -576,9 +625,15 @@ awful.rules.rules = {
         }
       }, properties = { floating = true }},
 
+    -- force Tilda to be non-float
+    {rule_any = {
+        instance = {"Tilda"},
+        class = {"Tilda"},
+        name = {"Tilda"}
+    }, properties = { floating = false }},
     -- Add titlebars to normal clients and dialogs
     { rule_any = {type = { "normal", "dialog" } },
-      properties = { titlebars_enabled = false }
+      properties = { titlebars_enabled = true }
     },
 	
     -- Set Firefox to always map on the tag named "2" on screen 1.
@@ -662,12 +717,12 @@ client.connect_signal("mouse::enter", function(c)
 end)
 
 client.connect_signal("focus", function(c) 
-    c.border_color = beautiful.border_focus
+    --c.border_color = beautiful.border_focus
     c.opacity = 1 
 end)
 client.connect_signal("unfocus", function(c) 
-    c.border_color = beautiful.border_normal 
-    c.opacity = 1
+    --c.border_color = beautiful.border_normal 
+    c.opacity = 0.85
 end)
 
 
@@ -704,23 +759,23 @@ end)
 end
 
 -- }}}
+--[[
 
-client.connect_signal("property::floating", function (c)
-    if c.floating then
-        awful.titlebar.show(c)
-    else
-        awful.titlebar.hide(c)
-    end
-end)
+    client.connect_signal("property::floating", function (c)
+        if c.floating then
+            awful.titlebar.show(c)
+        else
+            awful.titlebar.hide(c)
+        end
+    end)
+]]
 
 -- rounded clients
 client.connect_signal("manage", function (c)
     c.shape = function(cr,w,h)
-        gears.shape.rounded_rect(cr,w,h,20)
+        gears.shape.rounded_rect(cr,w,h,6)
     end
 end)
-
-local tlist = require("popups/tasklist")
 
 gears.wallpaper.maximized('~/Pictures/Wallpaper/sunset_gran_canaria_spain.jpg', s, true)
 awful.spawn.with_shell("~/.config/awesome/autorun.sh")

@@ -25,6 +25,7 @@ if (command -v system-config-printer-applet && ! pgrep applet.py ); then
   system-config-printer-applet &
 fi
 
+run pkill compton
 run xfsettingsd
 run nm-applet
 run light-locker
@@ -37,4 +38,4 @@ run pamac-tray
 # blueman-applet and msm_notifier are not installed in minimal edition
 run blueman-applet
 run msm_notifier
-feh --bg-scale ~/Pictures/Wallpapers/Ship-Wallpaper-52-1920x1080.jpg
+feh --bg-scale ~/Pictures/Wallpapers/8bit-water.jpg
