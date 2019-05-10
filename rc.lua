@@ -69,17 +69,18 @@ altkey = "Mod1"
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
     awful.layout.suit.tile,
+    awful.layout.suit.fair,
+    awful.layout.suit.fair,
+    awful.layout.suit.max,
+    awful.layout.suit.magnifier,
     awful.layout.suit.floating,
     --awful.layout.suit.tile.left,
     --awful.layout.suit.tile.bottom,
     -- awful.layout.suit.tile.top,
-    awful.layout.suit.fair,
     --awful.layout.suit.fair.horizontal,
     -- awful.layout.suit.spiral,
     -- awful.layout.suit.spiral.dwindle,
-    awful.layout.suit.max,
     -- awful.layout.suit.max.fullscreen,
-    awful.layout.suit.magnifier,
     -- awful.layout.suit.corner.nw,
     -- awful.layout.suit.corner.ne,
     -- awful.layout.suit.corner.sw,
@@ -205,103 +206,9 @@ screen.connect_signal("property::geometry", set_wallpaper)
 local systray = wibox.widget.systray()
 
 
-awful.screen.connect_for_each_screen(function(s)
-    --s.padding = {left=s.padding.left+12, right=s.padding.right, top=s.padding.top, bottom=s.padding.bottom}
-    -- Wallpaper
-    set_wallpaper(s)
+-- New bar without systray
+local new_bar = require("wibar/topbar")
 
-    -- Each screen has its own tag table.
-    awful.tag({ "main", "code", "host", "web", "media"}, s, awful.layout.layouts[1])
-
-    -- Create a promptbox for each screen
-    s.mypromptbox = awful.widget.prompt()
-    -- Create an imagebox widget which will contains an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox(s)
-    s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
-    -- Create a taglist widget
-    s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, taglist_buttons)
-	
-    -- Create a tasklist widget
-    --s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
-    s.mytasklist = awful.widget.tasklist {
-        screen   = s,
-        filter   = awful.widget.tasklist.filter.currenttags,
-        buttons  = tasklist_buttons,
-        layout   = {
-            spacing_widget = {
-                {
-                    forced_width  = 5,
-                    forced_height = 24,
-                    thickness     = 1,
-                    color         = '#777777',
-                    widget        = wibox.widget.separator
-                },
-                valign = 'center',
-                halign = 'center',
-                widget = wibox.container.place,
-            },
-            spacing = 20,
-            layout  = wibox.layout.fixed.horizontal
-        },
-        -- Notice that there is *NO* wibox.wibox prefix, it is a template,
-        -- not a widget instance.
-        widget_template = {
-            {
-                wibox.widget.base.make_widget(),
-                forced_height = 5,
-                id            = 'background_role',
-                widget        = wibox.container.background,
-            },
-            {
-                {
-                    id     = 'clienticon',
-                    widget = awful.widget.clienticon,
-                },
-                margins = 0,
-                widget  = wibox.container.margin
-            },
-            nil,
-            create_callback = function(self, c, index, objects) --luacheck: no unused args
-                self:get_children_by_id('clienticon')[1].client = c
-            end,
-            layout = wibox.layout.align.vertical,
-        },
-    }
-
-
-
-
-    -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s, height = 32 })
-
-    -- Add widgets to the wibox
-    s.mywibox:setup {
-        expand = "none",
-        layout = wibox.layout.align.horizontal,
-        { -- Left widgets
-                layout = wibox.layout.fixed.horizontal,
-                mylauncher,
-                s.mytaglist,
-                s.mypromptbox,
-                separator,
-        },
-        s.mytasklist, -- Middle widget
-        { -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-            systray,
-            mykeyboardlayout,
-            separator,
-            mytextclock,
-            s.mylayoutbox,
-        },
-    }
-    
-end)
 -- }}}
 
 -- {{{ Mouse bindings
@@ -775,8 +682,7 @@ end
     end)
 ]]
 
--- New bar without systray
-local new_bar = require("wibar/topbar")
+
 
 -- rounded clients
 client.connect_signal("manage", function (c)
