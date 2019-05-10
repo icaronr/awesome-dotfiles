@@ -677,7 +677,9 @@ client.connect_signal("request::titlebars", function(c)
         end)
     )
 
-    awful.titlebar(c) : setup {
+    awful.titlebar(c, {
+        position = "top"
+    }) : setup {
         { -- Left
             awful.titlebar.widget.iconwidget(c),
             buttons = buttons,
@@ -699,7 +701,8 @@ client.connect_signal("request::titlebars", function(c)
             awful.titlebar.widget.closebutton    (c),
             layout = wibox.layout.fixed.horizontal()
         },
-        layout = wibox.layout.align.horizontal
+        layout = wibox.layout.align.horizontal,
+        
     }
         -- Hide the menubar if we are not floating
    -- local l = awful.layout.get(c.screen)
@@ -722,7 +725,9 @@ client.connect_signal("focus", function(c)
 end)
 client.connect_signal("unfocus", function(c) 
     --c.border_color = beautiful.border_normal 
-    c.opacity = 0.85
+    if not c.sticky and not c.floating then
+        c.opacity = 0.8
+    end
 end)
 
 
@@ -769,6 +774,9 @@ end
         end
     end)
 ]]
+
+-- New bar without systray
+local new_bar = require("wibar/topbar")
 
 -- rounded clients
 client.connect_signal("manage", function (c)
